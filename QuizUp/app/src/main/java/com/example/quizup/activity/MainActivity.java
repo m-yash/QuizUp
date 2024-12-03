@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quizup.helper.QuizPreferences;
 import com.example.quizup.helper.TriviaApiService;
 import com.example.quizup.helper.TriviaQuestion;
+import com.example.quizup.utils.ConfirmUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.Collections;
@@ -86,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
         for (String option : options) {
             RadioButton radioButton = new RadioButton(this);
             radioButton.setText(option);
+
+            // Set text color to white
+            radioButton.setTextColor(getResources().getColor(android.R.color.white));
+            radioButton.setPadding(8, 8, 8, 8);
             optionsGroup.addView(radioButton);
         }
     }
@@ -93,7 +98,8 @@ public class MainActivity extends AppCompatActivity {
     public void submitAnswer(View view) {
         int selectedId = optionsGroup.getCheckedRadioButtonId();
         if (selectedId == -1) {
-            Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show();
+            ConfirmUtils.showInfoMessage("Please select an answer", this);
+//            Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -101,10 +107,13 @@ public class MainActivity extends AppCompatActivity {
         String selectedAnswer = selectedButton.getText().toString();
 
         if (selectedAnswer.equals(correctAnswer)) {
-            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
+            ConfirmUtils.showSuccessMessage("Correct Answer!", this);
+//            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
             quizPreferences.incrementCorrect();
         } else {
-            Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
+            String message = correctAnswer;
+            ConfirmUtils.showFailureMessage(message, this);
+//            Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
             quizPreferences.incrementIncorrect();
         }
 
