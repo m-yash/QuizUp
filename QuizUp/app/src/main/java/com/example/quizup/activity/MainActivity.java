@@ -12,6 +12,8 @@ import com.example.quizup.R;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -33,6 +35,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.Wearable;
+
 public class MainActivity extends AppCompatActivity {
     private TextView questionTextView;
     private RadioGroup optionsGroup;
@@ -48,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
         questionTextView = findViewById(R.id.questionTextView);
         optionsGroup = findViewById(R.id.optionsGroup);
         quizPreferences = new QuizPreferences(this);
+
+        // Button to send results to the phone
+        ImageButton getResultsButton = findViewById(R.id.getResultsButton);
+        getResultsButton.setOnClickListener(v -> sendResultsToPhone());
 
         fetchQuestion();
     }
@@ -118,5 +129,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fetchQuestion(); // Load the next question
+    }
+
+    private void sendResultsToPhone() {
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
+        DataMap dataMap = dataMapRequest.getDataMap();
+        dataMap.putInt("correct", quizPreferences.getCorrect());
+        dataMap.putInt("incorrect", quizPreferences.getIncorrect());
+        dataMap.putString("launch_request", "open_app");
+        Wearable.getDataClient(this).putDataItem(dataMapRequest.asPutDataRequest())
+                .addOnSuccessListener(unused ->
+                        ConfirmUtils.showSuccessMessage("Results sent to phone!", this))
+                .addOnFailureListener(e ->
+                        ConfirmUtils.showFailureMessage("Failed to send results", this));
     }
 }
