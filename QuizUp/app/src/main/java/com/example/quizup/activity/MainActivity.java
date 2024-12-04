@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void submitAnswer(View view) {
         int selectedId = optionsGroup.getCheckedRadioButtonId();
+        // Check if no radio button is selected
         if (selectedId == -1) {
             ConfirmUtils.showInfoMessage("Please select an answer", this);
 //            Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show();
@@ -115,20 +116,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         RadioButton selectedButton = findViewById(selectedId);
-        String selectedAnswer = selectedButton.getText().toString();
 
-        if (selectedAnswer.equals(correctAnswer)) {
-            ConfirmUtils.showSuccessMessage("Correct Answer!", this);
-//            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
-            quizPreferences.incrementCorrect();
+        // Ensure selectedButton is not null before calling getText()
+        if (selectedButton != null) {
+            String selectedAnswer = selectedButton.getText().toString();
+
+            // Check if the answer is correct
+            if (selectedAnswer.equals(correctAnswer)) {
+                ConfirmUtils.showSuccessMessage("Correct Answer!", this);
+                quizPreferences.incrementCorrect();
+            } else {
+                String message = correctAnswer;
+                ConfirmUtils.showFailureMessage(message, this);
+                quizPreferences.incrementIncorrect();
+            }
+
+            // Fetch next question
+            fetchQuestion();
         } else {
-            String message = correctAnswer;
-            ConfirmUtils.showFailureMessage(message, this);
-//            Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
-            quizPreferences.incrementIncorrect();
+            // If somehow the selected button is null, show an error
+            ConfirmUtils.showInfoMessage("Please select an answer", this);
         }
-
-        fetchQuestion(); // Load the next question
     }
 
     private void sendResultsToPhone() {
