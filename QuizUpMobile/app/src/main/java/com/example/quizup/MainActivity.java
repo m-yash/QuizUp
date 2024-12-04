@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
     }
 
+
     private void fetchLatestQuizResults() {
         // Query the Wearable API for data changes
         Wearable.getDataClient(this).getDataItems().addOnCompleteListener(task -> {

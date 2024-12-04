@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         ImageButton getResultsButton = findViewById(R.id.getResultsButton);
         getResultsButton.setOnClickListener(v -> sendResultsToPhone());
 
+        // Update the results immediately on the wearable
+        sendResultsToPhone();
         fetchQuestion();
     }
 
@@ -131,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
                 quizPreferences.incrementIncorrect();
             }
 
+            // Update the results immediately on the wearable
+            sendResultsToPhoneWithoutConfirmation();
             // Fetch next question
             fetchQuestion();
         } else {
@@ -138,17 +142,52 @@ public class MainActivity extends AppCompatActivity {
             ConfirmUtils.showInfoMessage("Please select an answer", this);
         }
     }
-
-    private void sendResultsToPhone() {
+    private void sendResultsToPhoneWithoutConfirmation() {
+        // Create the DataMap with the current results
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
         DataMap dataMap = dataMapRequest.getDataMap();
         dataMap.putInt("correct", quizPreferences.getCorrect());
         dataMap.putInt("incorrect", quizPreferences.getIncorrect());
         dataMap.putString("launch_request", "open_app");
-        Wearable.getDataClient(this).putDataItem(dataMapRequest.asPutDataRequest())
+
+        // Push the results to the wearable's data layer without showing confirmation activity
+        Wearable.getDataClient(this)
+                .putDataItem(dataMapRequest.asPutDataRequest())
+                .addOnSuccessListener(unused -> {
+                    // Optionally, log or handle success here if needed
+                })
+                .addOnFailureListener(e -> {
+                    // Optionally, log or handle failure here if needed
+                });
+    }
+    
+    private void sendResultsToPhone() {
+        // Create the DataMap with the current results
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
+        DataMap dataMap = dataMapRequest.getDataMap();
+        dataMap.putInt("correct", quizPreferences.getCorrect());
+        dataMap.putInt("incorrect", quizPreferences.getIncorrect());
+        dataMap.putString("launch_request", "open_app");
+
+        // Push the results to the wearable's data layer
+        Wearable.getDataClient(this)
+                .putDataItem(dataMapRequest.asPutDataRequest())
                 .addOnSuccessListener(unused ->
                         ConfirmUtils.showSuccessMessage("Results sent to phone!", this))
                 .addOnFailureListener(e ->
                         ConfirmUtils.showFailureMessage("Failed to send results", this));
     }
+
+//    private void sendResultsToPhone() {
+//        PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
+//        DataMap dataMap = dataMapRequest.getDataMap();
+//        dataMap.putInt("correct", quizPreferences.getCorrect());
+//        dataMap.putInt("incorrect", quizPreferences.getIncorrect());
+//        dataMap.putString("launch_request", "open_app");
+//        Wearable.getDataClient(this).putDataItem(dataMapRequest.asPutDataRequest())
+//                .addOnSuccessListener(unused ->
+//                        ConfirmUtils.showSuccessMessage("Results sent to phone!", this))
+//                .addOnFailureListener(e ->
+//                        ConfirmUtils.showFailureMessage("Failed to send results", this));
+//    }
 }
