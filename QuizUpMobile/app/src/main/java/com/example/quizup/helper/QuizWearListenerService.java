@@ -10,8 +10,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 public class QuizWearListenerService extends WearableListenerService {
     private static final String TAG = "QuizWearListenerService";
-    private static final String DATA_PATH = "/quiz_results"; // Ensure this matches the Wear app's path
-
+    private static final String DATA_PATH = "/quiz_results"; 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         for (DataEvent event : dataEvents) {

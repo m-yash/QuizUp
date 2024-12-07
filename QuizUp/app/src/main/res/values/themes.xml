@@ -4,4 +4,10 @@
         <item name="android:buttonStyle">@style/CustomRadioButtonStyle</item>
     </style>
     <style name="Theme.QuizUp" parent="Base.Theme.QuizUp"></style>
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/white</item> <!-- Set your desired background color -->
+        <item name="android:windowFullscreen">true</item> <!-- Make it full-screen -->
+        <item name="android:windowNoTitle">true</item> <!-- Remove title bar -->
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>

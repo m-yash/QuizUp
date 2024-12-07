@@ -68,25 +68,54 @@ public class MainActivity extends AppCompatActivity {
     private void fetchQuestion() {
         Gson gson = new GsonBuilder().create();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://beta-trivia.bongobot.io/")
+                .baseUrl("https://beta-trivia.bongobot.io/") // Ensure no extra spaces
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         TriviaApiService apiService = retrofit.create(TriviaApiService.class);
-        apiService.getRandomQuestion().enqueue(new Callback<List<TriviaQuestion>>() {
+
+        // Request questions for the "Entertainment" category
+        // use Entertainment, Geography
+        apiService.getQuestionsByCategory("cat", "Geography").enqueue(new Callback<List<TriviaQuestion>>() {
             @Override
             public void onResponse(Call<List<TriviaQuestion>> call, Response<List<TriviaQuestion>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    // Display the first question from the response
                     displayQuestion(response.body().get(0));
+                } else {
+                    Toast.makeText(MainActivity.this, "No questions found for this category", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<TriviaQuestion>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Failed to fetch question", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Failed to fetch question: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
+
+//    private void fetchQuestion() {
+//        Gson gson = new GsonBuilder().create();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl("https://beta-trivia.bongobot.io/")
+//                .addConverterFactory(GsonConverterFactory.create(gson))
+//                .build();
+//
+//        TriviaApiService apiService = retrofit.create(TriviaApiService.class);
+//        apiService.getRandomQuestion().enqueue(new Callback<List<TriviaQuestion>>() {
+//            @Override
+//            public void onResponse(Call<List<TriviaQuestion>> call, Response<List<TriviaQuestion>> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                }                    displayQuestion(response.body().get(0));
+//
+//            }
+//
+//            @Override
+//            public void onFailure(Call<List<TriviaQuestion>> call, Throwable t) {
+//                Toast.makeText(MainActivity.this, "Failed to fetch question", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
 
     private void displayQuestion(TriviaQuestion question) {
         questionTextView.setText(question.getQuestion());
@@ -154,13 +183,13 @@ public class MainActivity extends AppCompatActivity {
         Wearable.getDataClient(this)
                 .putDataItem(dataMapRequest.asPutDataRequest())
                 .addOnSuccessListener(unused -> {
-                    // Optionally, log or handle success here if needed
+                    
                 })
                 .addOnFailureListener(e -> {
-                    // Optionally, log or handle failure here if needed
+                    
                 });
     }
-    
+
     private void sendResultsToPhone() {
         // Create the DataMap with the current results
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
