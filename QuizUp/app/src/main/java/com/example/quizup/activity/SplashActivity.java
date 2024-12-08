@@ -8,35 +8,28 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quizup.R;
 
-//public class SplashActivity extends AppCompatActivity {
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
-//        setContentView(R.layout.activity_splash);
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
-//    }
-//}
+import com.example.quizup.databinding.ActivitySplashBinding;
 
 public class SplashActivity extends AppCompatActivity {
+
+    private ActivitySplashBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
 
-        // Delay for a few seconds and then start the main activity
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(SplashActivity.this, StartActivity.class);
-                startActivity(intent);
-                finish(); // Close the splash activity
-            }
+        // Inflate the layout using view binding
+        binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // Access views via binding
+        binding.appName.setText(R.string.app_name);
+
+        // start the main activity after some delay
+        new Handler().postDelayed(() -> {
+            Intent intent = new Intent(SplashActivity.this, StartActivity.class);
+            startActivity(intent);
+            finish(); // Close the splash activity
         }, 3000); // Duration of the splash screen in milliseconds
     }
 }

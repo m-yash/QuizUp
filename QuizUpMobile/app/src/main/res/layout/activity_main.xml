@@ -4,19 +4,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center"
+    android:layout_gravity="center">
 
-    <TextView
-        android:id="@+id/correctTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:text="Correct Answers: 0" />
 
-    <TextView
-        android:id="@+id/incorrectTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:text="Incorrect Answers: 0" />
-</LinearLayout>
+<LinearLayout
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="horizontal"
+android:gravity="center"
+    android:weightSum="2">
+
+
+<TextView
+android:id="@+id/correctTextView"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:textSize="24sp"
+    android:text="Correct Answers: 0"
+    android:layout_weight="1"
+    android:gravity="center" />
+
+
+<TextView
+android:id="@+id/incorrectTextView"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:textSize="24sp"
+    android:text="Incorrect Answers: 0"
+    android:layout_weight="1"
+    android:gravity="center" />
+
+    </LinearLayout>
+    </LinearLayout>

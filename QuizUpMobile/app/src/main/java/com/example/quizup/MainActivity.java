@@ -20,6 +20,8 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 
+import com.example.quizup.databinding.ActivityMainBinding;
+
 public class MainActivity extends AppCompatActivity implements DataClient.OnDataChangedListener{
 
     private static final String TAG = "MainActivity";
@@ -27,15 +29,16 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
     private TextView correctView, incorrectView;
 
+    // ViewBinding object for accessing views
+    private ActivityMainBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-
-        // Initialize TextViews for correct and incorrect answers
-        correctView = findViewById(R.id.correctTextView);
-        incorrectView = findViewById(R.id.incorrectTextView);
+        // Initialize ViewBinding
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());  // Set the root view of the binding
 
         // Register data listener
         Wearable.getDataClient(this).addListener(this);
@@ -59,10 +62,12 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     }
 
 
+    // Fetch the latest data from Wearable
     private void fetchLatestQuizResults() {
         // Query the Wearable API for data changes
         Wearable.getDataClient(this).getDataItems().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                // Process the data items received
                 for (DataItem dataItem : task.getResult()) {
                     // Check if the data item's path matches the expected path
                     if (dataItem.getUri().getPath().startsWith(PATH_PREFIX)) {
@@ -70,9 +75,10 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                         int correct = dataMap.getInt("correct", 0);
                         int incorrect = dataMap.getInt("incorrect", 0);
 
+
                         // Update the UI with the data received from Wearable
-                        correctView.setText("Correct Answers: " + correct);
-                        incorrectView.setText("Incorrect Answers: " + incorrect);
+                        binding.correctTextView.setText("Correct: " + correct);
+                        binding.incorrectTextView.setText("Incorrect: " + incorrect);
                     }
                 }
             } else {
@@ -80,9 +86,12 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
             }
         });
     }
+
+    // Handle data changes from Wearable
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEvents) {
         for (DataEvent event : dataEvents) {
+            // Check if the event is a change and if the path matches the expected path
             if (event.getType() == DataEvent.TYPE_CHANGED && event.getDataItem().getUri().getPath().startsWith(PATH_PREFIX)) {
                 // Process the data when changes are detected
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
@@ -91,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
                 runOnUiThread(() -> {
                     // Update the UI on the main thread
-                    correctView.setText("Correct Answers: " + correct);
-                    incorrectView.setText("Incorrect Answers: " + incorrect);
+                    binding.correctTextView.setText("Correct: " + correct);
+                    binding.incorrectTextView.setText("Incorrect: " + incorrect);
                 });
             }
         }

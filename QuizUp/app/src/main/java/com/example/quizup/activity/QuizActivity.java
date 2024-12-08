@@ -34,7 +34,11 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import com.example.quizup.databinding.ActivityQuizBinding;
+
 public class QuizActivity extends AppCompatActivity {
+
+    private ActivityQuizBinding binding; // View binding for the activity
     private TextView questionTextView;
     private RadioGroup optionsGroup;
     private ProgressBar loadingIndicator;
@@ -45,19 +49,15 @@ public class QuizActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_quiz);
 
-        questionTextView = findViewById(R.id.questionTextView);
-        optionsGroup = findViewById(R.id.optionsGroup);
-        loadingIndicator = findViewById(R.id.loadingIndicator);
+        // Initialize ViewBinding
+        binding = ActivityQuizBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        
         quizPreferences = new QuizPreferences(this);
 
-        // Button to send results to the phone
-        ImageButton getResultsButton = findViewById(R.id.getResultsButton);
-        getResultsButton.setOnClickListener(v -> sendResultsToPhone());
-
         // Update the results immediately on the wearable
-//        sendResultsToPhone();
+        // sendResultsToPhone();
         fetchQuestion();
     }
 
@@ -99,14 +99,17 @@ public class QuizActivity extends AppCompatActivity {
         });
     }
 
+    // Function to display a question and its options
     private void displayQuestion(TriviaQuestion question) {
-        questionTextView.setVisibility(View.VISIBLE);
-        optionsGroup.setVisibility(View.VISIBLE);
+        binding.questionTextView.setVisibility(View.VISIBLE);
+        binding.optionsGroup.setVisibility(View.VISIBLE);
 
-        questionTextView.setText(question.getQuestion());
+        binding.questionTextView.setText(question.getQuestion());
         correctAnswer = question.getCorrectAnswer();
 
-        optionsGroup.removeAllViews();
+        binding.optionsGroup.removeAllViews();
+
+        // Create radio buttons for options
         List<String> options = question.getIncorrectAnswers();
         options.add(correctAnswer);
         Collections.shuffle(options);
@@ -118,32 +121,25 @@ public class QuizActivity extends AppCompatActivity {
             // Set text color to white
             radioButton.setTextColor(getResources().getColor(android.R.color.white));
             radioButton.setPadding(8, 8, 8, 8);
-            optionsGroup.addView(radioButton);
+            binding.optionsGroup.addView(radioButton);
         }
     }
     private void showLoading(boolean isLoading) {
         // Show or hide the progress bar
-        loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        binding.loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
 
         // Show or hide the question text and options group
-        questionTextView.setVisibility(isLoading ? View.GONE : View.VISIBLE);
-        optionsGroup.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        binding.questionTextView.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        binding.optionsGroup.setVisibility(isLoading ? View.GONE : View.VISIBLE);
 
-        // Show or hide the Submit button and the Get Results button
-        Button submitButton = findViewById(R.id.submitButton);
-        ImageButton getResultsButton = findViewById(R.id.getResultsButton);
-        if (submitButton != null) {
-            submitButton.setVisibility(isLoading ? View.GONE : View.VISIBLE);
-        }
-        if (getResultsButton != null) {
-            getResultsButton.setVisibility(isLoading ? View.GONE : View.VISIBLE);
-        }
+        // Show or hide the Submit button
+        binding.submitButton.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+
     }
 
-
-
+        // Function to handle the submit button click
         public void submitAnswer(View view) {
-        int selectedId = optionsGroup.getCheckedRadioButtonId();
+        int selectedId = binding.optionsGroup.getCheckedRadioButtonId();
         // Check if no radio button is selected
         if (selectedId == -1) {
             ConfirmUtils.showInfoMessage("Please select an answer", this);
@@ -176,6 +172,8 @@ public class QuizActivity extends AppCompatActivity {
             ConfirmUtils.showInfoMessage("Please select an answer", this);
         }
     }
+
+    // Function to send results to the phone without showing confirmation activity
     private void sendResultsToPhoneWithoutConfirmation() {
         // Create the DataMap with the current results
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
@@ -195,6 +193,7 @@ public class QuizActivity extends AppCompatActivity {
                 });
     }
 
+    // Function to send results to the phone
     private void sendResultsToPhone() {
         // Create the DataMap with the current results
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
@@ -211,17 +210,4 @@ public class QuizActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         ConfirmUtils.showFailureMessage("Failed to send results", this));
     }
-
-//    private void sendResultsToPhone() {
-//        PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
-//        DataMap dataMap = dataMapRequest.getDataMap();
-//        dataMap.putInt("correct", quizPreferences.getCorrect());
-//        dataMap.putInt("incorrect", quizPreferences.getIncorrect());
-//        dataMap.putString("launch_request", "open_app");
-//        Wearable.getDataClient(this).putDataItem(dataMapRequest.asPutDataRequest())
-//                .addOnSuccessListener(unused ->
-//                        ConfirmUtils.showSuccessMessage("Results sent to phone!", this))
-//                .addOnFailureListener(e ->
-//                        ConfirmUtils.showFailureMessage("Failed to send results", this));
-//    }
 }

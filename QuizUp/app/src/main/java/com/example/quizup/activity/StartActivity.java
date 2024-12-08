@@ -12,38 +12,42 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.quizup.databinding.ActivityStartBinding;
+
 import com.example.quizup.R;
 import com.example.quizup.helper.QuizPreferences;
+import com.example.quizup.utils.ConfirmUtils;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.Wearable;
 
 public class StartActivity extends AppCompatActivity {
 
     private QuizPreferences quizPreferences;
-    private TextView correctCount;
-    private TextView incorrectCount;
+
+    private ActivityStartBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start);
+
+        // Inflate the layout using view binding
+        binding = ActivityStartBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         quizPreferences = new QuizPreferences(this);
 
-        Button entertainmentButton = findViewById(R.id.entertainmentButton);
-        Button geographyButton = findViewById(R.id.geographyButton);
-        ImageButton resetButton = findViewById(R.id.resetButton);
-        correctCount = findViewById(R.id.correctCount);
-        incorrectCount = findViewById(R.id.incorrectCount);
-
         // Set click listeners
-        entertainmentButton.setOnClickListener(v -> openQuiz("Entertainment"));
-        geographyButton.setOnClickListener(v -> openQuiz("Geography"));
+        binding.entertainmentButton.setOnClickListener(v -> openQuiz("Entertainment"));
+        binding.geographyButton.setOnClickListener(v -> openQuiz("Geography"));
 
-        resetButton.setOnClickListener(v -> {
-//            quizPreferences.resetStatistics();
-//            updateStatistics();
+        binding.resetButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, ResetDataActivity.class);
             startActivity(intent);
         });
+
+        // click listener for the "Get Results" button
+        binding.getResultsButton.setOnClickListener(v -> sendResultsToPhone());
 
         // Initialize statistics
         updateStatistics();
@@ -56,14 +60,34 @@ public class StartActivity extends AppCompatActivity {
         updateStatistics();
     }
 
+    // function to fetch and update statistics
     private void updateStatistics() {
-        correctCount.setText(String.valueOf(quizPreferences.getCorrect()));
-        incorrectCount.setText(String.valueOf(quizPreferences.getIncorrect()));
+        binding.correctCount.setText(String.valueOf(quizPreferences.getCorrect()));
+        binding.incorrectCount.setText(String.valueOf(quizPreferences.getIncorrect()));
     }
 
+    // function to open the quiz activity based upon category
     private void openQuiz(String category) {
         Intent intent = new Intent(this, QuizActivity.class);
         intent.putExtra("CATEGORY", category);
         startActivity(intent);
+    }
+
+    // function to send results to the phone
+    private void sendResultsToPhone() {
+        // Create the DataMap with the current results
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/quiz_results");
+        DataMap dataMap = dataMapRequest.getDataMap();
+        dataMap.putInt("correct", quizPreferences.getCorrect());
+        dataMap.putInt("incorrect", quizPreferences.getIncorrect());
+        dataMap.putString("launch_request", "open_app");
+
+        // Push the results to the wearable's data layer
+        Wearable.getDataClient(this)
+                .putDataItem(dataMapRequest.asPutDataRequest())
+                .addOnSuccessListener(unused ->
+                        ConfirmUtils.showSuccessMessage("Results sent to phone!", this))
+                .addOnFailureListener(e ->
+                        ConfirmUtils.showFailureMessage("Failed to send results", this));
     }
 }
