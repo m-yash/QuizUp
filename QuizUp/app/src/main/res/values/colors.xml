@@ -3,4 +3,8 @@
     <color name="white">#fff</color>
     <color name="black">#000</color>
     <color name="app_color">#f35050</color>
+
+    <color name="orange">#FFA500</color>
+    <color name="light_red">  #ffcccb</color>
+    <color name="light_green">  #90EE90</color>
 </resources>

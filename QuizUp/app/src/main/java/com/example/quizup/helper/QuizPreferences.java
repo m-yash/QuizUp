@@ -24,6 +24,10 @@ public class QuizPreferences {
         sharedPreferences.edit().putInt(INCORRECT_KEY, count + 1).apply();
     }
 
+    public void resetStatistics() {
+        sharedPreferences.edit().clear().apply();
+    }
+
     public int getCorrect() {
         return sharedPreferences.getInt(CORRECT_KEY, 0);
     }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">QuizUp</string>
+    <string name="reset_data">Resetting Data</string>
 </resources>

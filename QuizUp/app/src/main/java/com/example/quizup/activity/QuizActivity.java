@@ -2,23 +2,18 @@ package com.example.quizup.activity;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.quizup.R;
 
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quizup.helper.QuizPreferences;
 import com.example.quizup.helper.TriviaApiService;
@@ -35,14 +30,14 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 
-public class MainActivity extends AppCompatActivity {
+public class QuizActivity extends AppCompatActivity {
     private TextView questionTextView;
     private RadioGroup optionsGroup;
+    private ProgressBar loadingIndicator;
     private QuizPreferences quizPreferences;
 
     private String correctAnswer;
@@ -50,10 +45,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_quiz);
 
         questionTextView = findViewById(R.id.questionTextView);
         optionsGroup = findViewById(R.id.optionsGroup);
+        loadingIndicator = findViewById(R.id.loadingIndicator);
         quizPreferences = new QuizPreferences(this);
 
         // Button to send results to the phone
@@ -61,11 +57,17 @@ public class MainActivity extends AppCompatActivity {
         getResultsButton.setOnClickListener(v -> sendResultsToPhone());
 
         // Update the results immediately on the wearable
-        sendResultsToPhone();
+//        sendResultsToPhone();
         fetchQuestion();
     }
 
     private void fetchQuestion() {
+
+        showLoading(true);
+
+        String category = getIntent().getStringExtra("CATEGORY");
+        if (category == null) category = "Entertainment"; // Default to Entertainment
+
         Gson gson = new GsonBuilder().create();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://beta-trivia.bongobot.io/") // Ensure no extra spaces
@@ -76,48 +78,31 @@ public class MainActivity extends AppCompatActivity {
 
         // Request questions for the "Entertainment" category
         // use Entertainment, Geography
-        apiService.getQuestionsByCategory("cat", "Geography").enqueue(new Callback<List<TriviaQuestion>>() {
+        apiService.getQuestionsByCategory("cat", category).enqueue(new Callback<List<TriviaQuestion>>() {
             @Override
             public void onResponse(Call<List<TriviaQuestion>> call, Response<List<TriviaQuestion>> response) {
+
+                showLoading(false);
+
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     // Display the first question from the response
                     displayQuestion(response.body().get(0));
                 } else {
-                    Toast.makeText(MainActivity.this, "No questions found for this category", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(QuizActivity.this, "No questions found for this category", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<TriviaQuestion>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Failed to fetch question: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(QuizActivity.this, "Failed to fetch question: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-//    private void fetchQuestion() {
-//        Gson gson = new GsonBuilder().create();
-//        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl("https://beta-trivia.bongobot.io/")
-//                .addConverterFactory(GsonConverterFactory.create(gson))
-//                .build();
-//
-//        TriviaApiService apiService = retrofit.create(TriviaApiService.class);
-//        apiService.getRandomQuestion().enqueue(new Callback<List<TriviaQuestion>>() {
-//            @Override
-//            public void onResponse(Call<List<TriviaQuestion>> call, Response<List<TriviaQuestion>> response) {
-//                if (response.isSuccessful() && response.body() != null) {
-//                }                    displayQuestion(response.body().get(0));
-//
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<TriviaQuestion>> call, Throwable t) {
-//                Toast.makeText(MainActivity.this, "Failed to fetch question", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
-
     private void displayQuestion(TriviaQuestion question) {
+        questionTextView.setVisibility(View.VISIBLE);
+        optionsGroup.setVisibility(View.VISIBLE);
+
         questionTextView.setText(question.getQuestion());
         correctAnswer = question.getCorrectAnswer();
 
@@ -136,8 +121,28 @@ public class MainActivity extends AppCompatActivity {
             optionsGroup.addView(radioButton);
         }
     }
+    private void showLoading(boolean isLoading) {
+        // Show or hide the progress bar
+        loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
 
-    public void submitAnswer(View view) {
+        // Show or hide the question text and options group
+        questionTextView.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        optionsGroup.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+
+        // Show or hide the Submit button and the Get Results button
+        Button submitButton = findViewById(R.id.submitButton);
+        ImageButton getResultsButton = findViewById(R.id.getResultsButton);
+        if (submitButton != null) {
+            submitButton.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        }
+        if (getResultsButton != null) {
+            getResultsButton.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        }
+    }
+
+
+
+        public void submitAnswer(View view) {
         int selectedId = optionsGroup.getCheckedRadioButtonId();
         // Check if no radio button is selected
         if (selectedId == -1) {
