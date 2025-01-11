@@ -1,3 +1,5 @@
+Note: Trivia questions are retrieved from free API service. Data is not static.
+
 ![WhatsApp Image 2024-12-08 at 6 29 03 PM](https://github.com/user-attachments/assets/0d55b5cb-bb63-446a-9edd-73e2cf44a174) ![WhatsApp Image 2024-12-08 at 6 29 34 PM](https://github.com/user-attachments/assets/c760450f-ffc6-41c1-827c-50d223460e06)
 
 ![WhatsApp Image 2024-12-08 at 6 34 16 PM](https://github.com/user-attachments/assets/59c80884-5abf-4430-966b-9f522a23f212) ![WhatsApp Image 2024-12-08 at 6 34 33 PM](https://github.com/user-attachments/assets/f1879746-4205-4a38-b46c-6dc335a0f07f)
